@@ -1,0 +1,175 @@
+<?php
+
+/**
+ * @file
+ * main module.
+ */
+
+
+/**
+* Implements hook_menu().
+*/
+ function custom_nsuem_menu() {
+   $items['admin/custom'] = [
+     'title' => 'Custom page',
+     'page callback' => 'custom_nsuem_admin_page',
+      'access callback' => TRUE,
+      ];
+      $items['admin/register'] = [
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('nsuem_register_form'),
+      'access callback' => TRUE
+      ];
+    $items['response/%node'] = [
+    'access callback' => 'node_access',
+    'access arguments' => array('view', 1),
+	  'page callback' => 'drupal_get_form',
+  	'page arguments' => array('custom_nsuem_response_form', 1),
+
+];
+return $items;
+}
+/**
+* Page callback for admin/custom.
+*/
+function custom_nsuem_admin_page() {
+return "<strong >Hello, <br/> World! </strong>  <br/>"."<i>Hello, <br/> World! <br> </i>" ."<a href=\"https://nsuem.ru/\">Сайт НГУЭУ</a>";
+}
+
+/**
+* Form builder for register form.
+*/
+function nsuem_register_form($form, &$form_state) {
+$form['first_name'] = array(
+'#type' => 'textfield' ,
+'#required'=>true,
+'#title' => 'Введите имя',
+);
+
+$form['last_name'] = array(
+'#type' => 'textfield' ,
+'#required'=>true,
+'#title' => 'Введите фамилию',
+);
+
+$form['email'] = array(
+'#type' => 'textfield' ,
+'#required'=>true,
+'#title' => 'Введите email',
+);
+
+$form['sex'] = array(
+'#type' => 'radios' ,
+'#title' => 'Выберите пол',
+'#options'=> array (
+1=> 'муж',
+2=>  'жен'
+ ),
+);
+
+ $form['kurs'] = array(
+'#type' => 'checkboxes' ,
+'#title' => 'выберите предметы',
+'#options'=> array (
+1=> 'информатика',
+2=>  'история',
+3=> 'русский'
+ ),
+);
+
+$form['text'] = array(
+'#type' => 'textarea' ,
+'#title' => 'Введите информацию о себе',
+);
+
+$form['actions']['submit'] = array(
+'#type' => 'submit',
+'#value' => t('Save'),
+);
+
+$form['actions']['cansel'] = array(
+'#type' => 'submit',
+'#value' => 'сбросить',
+);
+
+return $form;
+}
+
+function custom_nsuem_form_vacancy_node_form_alter(&$form, &$form_state){
+    //dsm($form);
+
+	//$form['field_name']['und'][0]['target_id']['#default_value']=$_GET['firm'];
+
+}
+
+//добавляет переклчатель и роль
+ function custom_nsuem_form_user_register_form_alter(&$form, &$form_state){
+
+$form['category_users'] =  array(
+'#type' => 'radios' ,
+'#title' => 'выберите категорию пользователя',
+'#options'=> array (
+'stud'=> 'Студент',
+'firm'=>  'Фирма',
+ ),
+ );
+
+ array_unshift($form['#submit'], 'custom_nsuem_roles_submit');
+ }
+ //добавление ролей по выбранной кнопочке(радио баттон)
+function custom_nsuem_roles_submit(&$form, &$form_state){
+
+$b=$form_state['values']['category_users'];
+
+if($b=='firm') {
+$a=array_search('Фирма', $form['account']['roles']['#options']);
+} else {
+$a=array_search('Студент', $form['account']['roles']['#options']);
+}
+
+$form_state['values']['roles'][$a]=$a;
+
+ }
+ //форма для подтверждения отправки отклика
+ function custom_nsuem_response_form ($form, &$form_state, $node){
+	 global $user;
+//добавление текстового поля
+  $form['text_responce'] = array (
+    '#markup' => 'Отправить отклик на вакансию '. $node->title .'? </br > </br>',
+  );
+
+  $form['actions']['submit'] = array(
+	'#type' => 'submit',
+	'#value' => ('Откликнуться'),
+
+);
+  $form['nid'] =  array(
+    '#type' => 'value',
+    '#value' => $node->nid,
+);
+
+return $form;
+ }
+ //submit для отклика
+function custom_nsuem_response_form_submit (&$form, &$form_state){
+  global $user;
+
+
+  $node = new stdClass();
+  $node->title="Отклик";
+  $node->type="response";
+  $node->field_vacancy['und'][0]['target_id']=$form_state['values']['nid'];
+  $node->language = LANGUAGE_NONE;
+  node_object_prepare($node);
+  $node->uid = $user->uid;     // необязательно
+$node->status = 1;
+  //$a=$views_get_view_resalt($form, &$form_state, $node);
+node_save($node);
+  //drupal_set_message('Данные успешно отправлены');
+
+  drupal_set_message('Ваша заявка на вакансию  отправлена');
+  //вернуться ко всем вакансиям
+  //"/response/ul?destination=/vacancies"
+  //$_GET['destination'];
+  drupal_goto('vacancies/');
+}

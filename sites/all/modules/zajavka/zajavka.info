@@ -1,0 +1,14 @@
+name = zajavka
+core = 7.x
+package = Features
+version = 7.x-0.1
+dependencies[] = entityreference
+dependencies[] = features
+features[features_api][] = api:2
+features[field_base][] = field_name
+features[field_base][] = field_resume
+features[field_base][] = field_vacancy
+features[field_instance][] = node-request-field_name
+features[field_instance][] = node-request-field_resume
+features[field_instance][] = node-request-field_vacancy
+features[node][] = request

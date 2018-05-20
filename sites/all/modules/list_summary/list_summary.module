@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the list_summary feature.
+ */
+
+include_once 'list_summary.features.inc';

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the zajavka feature.
+ */
+
+include_once 'zajavka.features.inc';
